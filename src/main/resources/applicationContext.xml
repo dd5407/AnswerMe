@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd">
+
+    <!-- 数据源配置 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/test"/>
+        <property name="user" value="root"/>
+        <property name="password" value="root"/>
+        <property name="initialPoolSize" value="3"/>
+        <property name="maxPoolSize" value="10"/>
+        <property name="maxStatements" value="100"/>
+        <property name="acquireIncrement" value="2"/>
+    </bean>
+
+    <!-- hibernate -->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/><!-- 引用数据源 -->
+        <property name="packagesToScan">
+            <list>
+                <value>com.ddpzp.entity*</value><!-- 加载hibernate的jpa注解形式的实体类 -->
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.SQLServerDialect</prop>
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.format_sql">true</prop>
+                <!--<prop key="hibernate.current_session_context_class">thread</prop>-->
+            </props>
+        </property>
+    </bean>
+
+    <!-- 配置Hibernate4事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <!-- 基于注解的事务，当注解中发现@Transactional时，使用id为“transactionManager”的事务管理器 -->
+    <!-- 如果没有设置transaction-manager的值，则spring以缺省默认的事务管理器来处理事务，默认事务管理器为第一个加载的事务管理器 -->
+    <!-- <tx:annotation-driven transaction-manager="transactionManager"/> -->
+    <tx:annotation-driven />
+
+    <!-- 事务的传播属性 -->
+    <tx:advice id="transactionAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="add*" propagation="REQUIRED"/>
+            <tx:method name="create*" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/>
+            <tx:method name="remove*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="get*" read-only="true"/>
+            <tx:method name="find*" read-only="true"/>
+            <tx:method name="*" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 参与事务的service  -->
+    <aop:config>
+        <aop:pointcut expression="execution(* com.ddpzp.service.*.*(..))" id="servicePointCut"/>
+        <aop:advisor advice-ref="transactionAdvice" pointcut-ref="servicePointCut"/>
+    </aop:config>
+</beans>
