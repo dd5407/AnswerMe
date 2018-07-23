@@ -21,19 +21,15 @@
 
 
     <!-- 静态资源访问，解决页面无法访问到js、img和css文件夹中的文件的问题 -->
-    <mvc:resources location="/images/" mapping="/imgages/**"/>
+    <mvc:resources location="/images/" mapping="/images/**"/>
     <mvc:resources location="/js/" mapping="/js/**"/>
     <mvc:resources location="/css/" mapping="/css/**"/>
 
-    <!--
-          视图解析器：InternalResourceViewResolver
-      UrlBasedViewResolver 的子类，通常用于查找 JSP（类 InternalResourceView）和
-      JSTL（类 JstlView，InternalResourceView 的子类）等视图
-    -->
+    <!--视图解析器-->
     <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"></property>
-        <property name="prefix" value="/WEB-INF/jsp"></property>
-        <property name="suffix" value=".jsp"></property>
+        <property name="prefix" value="/WEB-INF/html"/>
+        <property name="suffix" value=".html"/>
+        <property name="contentType" value="text/html"/>
     </bean>
 
     <!-- 文件上传限制 -->
